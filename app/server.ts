@@ -1,3 +1,4 @@
+import { RoomHandler } from './socket/roomHandler';
 import { UserHandler } from './socket/userHandler';
 import * as bodyParser from "body-parser";
 import * as express from "express";
@@ -46,6 +47,7 @@ export class Server {
 
     //add api
     this.api();
+    console.log('init app')
   }
 
   /**
@@ -109,6 +111,7 @@ export class Server {
     this.io = socket;
     this.io.on('connection', (socket) => {
       let userHandler = new UserHandler(socket);
+      let roomHandler = new RoomHandler(socket)
       console.log('connected', socket.id)
     })
   }

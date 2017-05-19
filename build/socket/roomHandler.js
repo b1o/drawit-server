@@ -9,29 +9,33 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var user_1 = require("./../models/user");
+var room_1 = require("./../models/room");
 var user_repo_1 = require("./../repositories/user-repo");
+var room_repo_1 = require("./../repositories/room-repo");
 var typescript_ioc_1 = require("typescript-ioc");
-var UserHandler = (function () {
-    function UserHandler(socket) {
+var RoomHandler = (function () {
+    function RoomHandler(socket) {
         this.socket = socket;
-        this.registerUser();
+        this.listen();
     }
-    UserHandler.prototype.registerUser = function () {
+    RoomHandler.prototype.listen = function () {
         var _this = this;
-        this.socket.on('user:new', function (data) {
-            var user = new user_1.User(data.name, _this.socket);
-            console.log(user.Name, _this.socket.id);
-            _this.userRepo.addUser(user);
-        });
-        this.socket.on('disconnect', function () {
-            _this.userRepo.removeUser(_this.socket.id);
+        this.socket.on('room:new', function (data) {
+            var creator = _this.userRepo.getUserById(_this.socket.id);
+            var room = new room_1.Room(data.name, creator);
+            console.log('creating room: ', room.name, room.creator.id);
+            _this.roomRepo.addRoom(room);
+            _this.socket.emit('room:created', { name: room.name, users: room.users, creator: room.creator.Name });
         });
     };
-    return UserHandler;
+    return RoomHandler;
 }());
 __decorate([
     typescript_ioc_1.Inject,
+    __metadata("design:type", room_repo_1.RoomRepository)
+], RoomHandler.prototype, "roomRepo", void 0);
+__decorate([
+    typescript_ioc_1.Inject,
     __metadata("design:type", user_repo_1.UserRepository)
-], UserHandler.prototype, "userRepo", void 0);
-exports.UserHandler = UserHandler;
+], RoomHandler.prototype, "userRepo", void 0);
+exports.RoomHandler = RoomHandler;

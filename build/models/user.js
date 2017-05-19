@@ -4,6 +4,7 @@ var User = (function () {
     function User(name, socket) {
         this.Name = name;
         this.socket = socket;
+        this.id = this.socket.id;
     }
     Object.defineProperty(User.prototype, "Name", {
         get: function () {

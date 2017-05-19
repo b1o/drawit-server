@@ -1,10 +1,14 @@
 export class User {
     private name:string;
     private socket: SocketIO.Socket;
+    public id:string;
+    public inRoom:string;
+    public inChannel:string;
 
     constructor(name:string, socket: SocketIO.Socket) {
         this.Name = name;
         this.socket = socket;
+        this.id = this.socket.id;
     }
 
     get Name() {

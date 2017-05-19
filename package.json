@@ -15,9 +15,11 @@
     "inversify": "^4.1.0",
     "method-override": "^2.3.8",
     "morgan": "^1.8.1",
+    "needlepoint": "^1.0.5",
     "path": "^0.12.7",
     "reflect-metadata": "^0.1.10",
-    "socket.io": "^2.0.1"
+    "socket.io": "^2.0.1",
+    "typescript-ioc": "^0.4.1"
   },
   "devDependencies": {
     "@types/body-parser": "^1.16.3",

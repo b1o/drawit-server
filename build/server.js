@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var roomHandler_1 = require("./socket/roomHandler");
 var userHandler_1 = require("./socket/userHandler");
 var bodyParser = require("body-parser");
 var express = require("express");
@@ -29,6 +30,7 @@ var Server = (function () {
         this.routes();
         //add api
         this.api();
+        console.log('init app');
     }
     /**
      * Bootstrap the application.
@@ -92,6 +94,7 @@ var Server = (function () {
         this.io = socket;
         this.io.on('connection', function (socket) {
             var userHandler = new userHandler_1.UserHandler(socket);
+            var roomHandler = new roomHandler_1.RoomHandler(socket);
             console.log('connected', socket.id);
         });
     };

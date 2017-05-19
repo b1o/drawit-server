@@ -10,32 +10,17 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var typescript_ioc_1 = require("typescript-ioc");
-var UserRepository = (function () {
-    function UserRepository() {
-        this.users = [];
+var RoomRepository = (function () {
+    function RoomRepository() {
+        this.rooms = [];
     }
-    UserRepository.prototype.addUser = function (user) {
-        this.users.push(user);
-        console.log(this.users.length);
+    RoomRepository.prototype.addRoom = function (room) {
+        this.rooms.push(room);
     };
-    UserRepository.prototype.getUserById = function (id) {
-        return this.users.filter(function (user) {
-            return user.id == id;
-        })[0];
-    };
-    UserRepository.prototype.removeUser = function (id) {
-        var user = this.users.filter(function (user) {
-            return user.id == id;
-        })[0];
-        if (user) {
-            console.log('removed ', user.id);
-            this.users.splice(this.users.indexOf(user), 1);
-        }
-    };
-    return UserRepository;
+    return RoomRepository;
 }());
-UserRepository = __decorate([
+RoomRepository = __decorate([
     typescript_ioc_1.Singleton,
     __metadata("design:paramtypes", [])
-], UserRepository);
-exports.UserRepository = UserRepository;
+], RoomRepository);
+exports.RoomRepository = RoomRepository;
