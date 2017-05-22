@@ -17,6 +17,7 @@ var RoomHandler = (function () {
     function RoomHandler(socket) {
         this.socket = socket;
         this.listen();
+        var lobby = new room_1.Room('Lobby');
     }
     RoomHandler.prototype.listen = function () {
         var _this = this;
@@ -25,7 +26,19 @@ var RoomHandler = (function () {
             var room = new room_1.Room(data.name, creator);
             console.log('creating room: ', room.name, room.creator.id);
             _this.roomRepo.addRoom(room);
-            _this.socket.emit('room:created', { name: room.name, users: room.users, creator: room.creator.Name });
+            room.join(creator);
+            var users = room.users.map(function (user) {
+                return user.toDto();
+            });
+            _this.socket.broadcast.emit('update:rooms', { name: room.name, users: users, creator: room.creator.toDto() });
+            _this.socket.emit('update:rooms', { name: room.name, users: users, creator: room.creator.toDto() });
+            console.log(users);
+        });
+        this.socket.on('user:joined', function (data) {
+            var user = _this.userRepo.getUserByName(data.user);
+            var room = _this.roomRepo.getRoomByName(data.room);
+            user.socket.join(room.name);
+            room.join(user);
         });
     };
     return RoomHandler;

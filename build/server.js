@@ -93,8 +93,8 @@ var Server = (function () {
     Server.prototype.initSocket = function (socket) {
         this.io = socket;
         this.io.on('connection', function (socket) {
-            var userHandler = new userHandler_1.UserHandler(socket);
             var roomHandler = new roomHandler_1.RoomHandler(socket);
+            var userHandler = new userHandler_1.UserHandler(socket);
             console.log('connected', socket.id);
         });
     };

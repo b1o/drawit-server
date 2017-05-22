@@ -17,10 +17,16 @@ var UserRepository = (function () {
     UserRepository.prototype.addUser = function (user) {
         this.users.push(user);
         console.log(this.users.length);
+        return this.getUserById(user.id);
     };
     UserRepository.prototype.getUserById = function (id) {
         return this.users.filter(function (user) {
             return user.id == id;
+        })[0];
+    };
+    UserRepository.prototype.getUserByName = function (name) {
+        return this.users.filter(function (user) {
+            return user.Name == name;
         })[0];
     };
     UserRepository.prototype.removeUser = function (id) {
@@ -31,6 +37,18 @@ var UserRepository = (function () {
             console.log('removed ', user.id);
             this.users.splice(this.users.indexOf(user), 1);
         }
+    };
+    UserRepository.prototype.getAllUsers = function () {
+        var users = this.users.map(function (user) {
+            return user.toDto();
+        });
+        return users;
+    };
+    UserRepository.prototype.getUsersByRoomName = function (room) {
+        var users = this.users.filter(function (user) {
+            return user.inRoom == room;
+        });
+        return users;
     };
     return UserRepository;
 }());

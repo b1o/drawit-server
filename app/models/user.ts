@@ -1,6 +1,6 @@
 export class User {
     private name:string;
-    private socket: SocketIO.Socket;
+    public socket: SocketIO.Socket;
     public id:string;
     public inRoom:string;
     public inChannel:string;
@@ -20,4 +20,13 @@ export class User {
             this.name = value;
         }
     }
+
+    public toDto() {
+        let dto = {
+            name: this.name,
+            inRoom: this.inRoom,
+            id: this.id,
+        }
+        return dto;
+   }
 }

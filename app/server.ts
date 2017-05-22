@@ -110,8 +110,8 @@ export class Server {
   public initSocket(socket: any) {
     this.io = socket;
     this.io.on('connection', (socket) => {
-      let userHandler = new UserHandler(socket);
       let roomHandler = new RoomHandler(socket)
+      let userHandler = new UserHandler(socket);
       console.log('connected', socket.id)
     })
   }

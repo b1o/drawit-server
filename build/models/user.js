@@ -18,6 +18,14 @@ var User = (function () {
         enumerable: true,
         configurable: true
     });
+    User.prototype.toDto = function () {
+        var dto = {
+            name: this.name,
+            inRoom: this.inRoom,
+            id: this.id,
+        };
+        return dto;
+    };
     return User;
 }());
 exports.User = User;

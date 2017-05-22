@@ -17,6 +17,11 @@ var RoomRepository = (function () {
     RoomRepository.prototype.addRoom = function (room) {
         this.rooms.push(room);
     };
+    RoomRepository.prototype.getRoomByName = function (name) {
+        return this.rooms.filter(function (room) {
+            return room.name == name;
+        })[0];
+    };
     return RoomRepository;
 }());
 RoomRepository = __decorate([

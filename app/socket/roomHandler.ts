@@ -16,15 +16,30 @@ export class RoomHandler {
     constructor(socket: SocketIO.Socket) {
         this.socket = socket;
         this.listen()
+        let lobby = new Room('Lobby')
     }
 
     private listen() {
-        this.socket.on('room:new', (data:any) => {
+        this.socket.on('room:new', (data: any) => {
             let creator = this.userRepo.getUserById(this.socket.id);
             let room = new Room(data.name, creator);
             console.log('creating room: ', room.name, room.creator.id)
             this.roomRepo.addRoom(room);
-            this.socket.emit('room:created', {name: room.name, users: room.users, creator: room.creator.Name});
+
+            room.join(creator);
+            let users = room.users.map(function (user) {
+                return user.toDto()
+            });
+            this.socket.broadcast.emit('update:rooms', { name: room.name, users: users, creator: room.creator.toDto() });
+            this.socket.emit('update:rooms', { name: room.name, users: users, creator: room.creator.toDto() })
+            console.log(users)
+        })
+
+        this.socket.on('user:joined', (data:any) => {
+            let user = this.userRepo.getUserByName(data.user);
+            let room = this.roomRepo.getRoomByName(data.room);
+            user.socket.join(room.name)
+            room.join(user)
         })
     }
 

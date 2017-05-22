@@ -12,4 +12,10 @@ export class RoomRepository {
     public addRoom(room:Room) {
         this.rooms.push(room);
     }
+
+    public getRoomByName(name:string) {
+       return this.rooms.filter((room) => {
+            return room.name == name;
+        })[0]
+    }
 }

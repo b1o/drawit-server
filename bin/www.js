@@ -12,6 +12,7 @@ var httpPort = normalizePort(process.env.PORT || 3000);
 var bootstraped = server.Server.bootstrap()
 var app = bootstraped.app;
 app.set("port", httpPort);
+app.set("domain", "172.16.121.86")
 var httpServer = http.createServer(app);
 
 bootstraped.initSocket(io(httpServer))
@@ -77,6 +78,7 @@ function onError(error) {
  */
 function onListening() {
   var addr = httpServer.address();
+  console.log(addr)
   var bind = typeof addr === "string"
     ? "pipe " + addr
     : "port " + addr.port;
