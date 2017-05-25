@@ -1,11 +1,11 @@
-import { User } from './user';
+import { User, UserDTO } from './user';
 
 export class Room {
     public name: string;
     public creator: User;
-    public users: User[];
+    public users: Array<UserDTO>
 
-    constructor(name: string, creator?: User) {
+    constructor(name: string, creator?: any) {
         this.name = name;
         if(creator) {
             this.creator = creator;
@@ -13,11 +13,19 @@ export class Room {
         this.users = [];
     }
 
-    public join(user: User) {
-        user.inRoom = this.name;
-        this.users.push(user);
-        user.socket.join(this.name);
-        user.socket.emit('user:joined', user.toDto());
-        user.socket.to(this.name).emit('user:joined', user.toDto(   ))
+    public addUser(user: UserDTO) {
+        this.users.push(user)
+    }
+
+    public removeUser(user:User) {
+        let a = this.users.filter(function(u) {
+            return u.name == user.Name && u.id == user.id;
+        })[0]
+        this.users.splice(this.users.indexOf(a), 1);
+        console.log(`removing user ${a.name} from room ${this.name}`)
+    }
+
+    public getUsers() {
+        return this.users;
     }
 }

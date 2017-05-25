@@ -8,12 +8,18 @@ var Room = (function () {
         }
         this.users = [];
     }
-    Room.prototype.join = function (user) {
-        user.inRoom = this.name;
+    Room.prototype.addUser = function (user) {
         this.users.push(user);
-        user.socket.join(this.name);
-        user.socket.emit('user:joined', user.toDto());
-        user.socket.to(this.name).emit('user:joined', user.toDto());
+    };
+    Room.prototype.removeUser = function (user) {
+        var a = this.users.filter(function (u) {
+            return u.name == user.Name && u.id == user.id;
+        })[0];
+        this.users.splice(this.users.indexOf(a), 1);
+        console.log("removing user " + a.name + " from room " + this.name);
+    };
+    Room.prototype.getUsers = function () {
+        return this.users;
     };
     return Room;
 }());

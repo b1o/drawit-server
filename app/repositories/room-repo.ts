@@ -18,4 +18,8 @@ export class RoomRepository {
             return room.name == name;
         })[0]
     }
+
+    public getAllRooms() {
+        return this.rooms;
+    }
 }

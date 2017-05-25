@@ -14,31 +14,46 @@ var user_repo_1 = require("./../repositories/user-repo");
 var room_repo_1 = require("./../repositories/room-repo");
 var typescript_ioc_1 = require("typescript-ioc");
 var RoomHandler = (function () {
-    function RoomHandler(socket) {
+    function RoomHandler(socket, global) {
         this.socket = socket;
         this.listen();
-        var lobby = new room_1.Room('Lobby');
+        this.global = global;
     }
     RoomHandler.prototype.listen = function () {
         var _this = this;
-        this.socket.on('room:new', function (data) {
+        this.socket.on('room:new', function (data, callback) {
             var creator = _this.userRepo.getUserById(_this.socket.id);
-            var room = new room_1.Room(data.name, creator);
+            var room = new room_1.Room(data.name, creator.toDto());
+            var previousRoom = _this.roomRepo.getRoomByName(creator.inRoom);
+            previousRoom.removeUser(creator);
             console.log('creating room: ', room.name, room.creator.id);
             _this.roomRepo.addRoom(room);
-            room.join(creator);
-            var users = room.users.map(function (user) {
-                return user.toDto();
-            });
-            _this.socket.broadcast.emit('update:rooms', { name: room.name, users: users, creator: room.creator.toDto() });
-            _this.socket.emit('update:rooms', { name: room.name, users: users, creator: room.creator.toDto() });
+            room.addUser(creator.toDto());
+            creator.joinRoom(room.name);
+            var users = room.getUsers();
+            _this.socket.broadcast.emit('update:room', room);
+            _this.socket.emit('update:room', room);
+            _this.global.emit('update:rooms', _this.roomRepo.getAllRooms());
+            _this.global.to(room.name).emit('update:users', room.getUsers());
+            if (callback) {
+                callback(room);
+            }
             console.log(users);
         });
-        this.socket.on('user:joined', function (data) {
-            var user = _this.userRepo.getUserByName(data.user);
+        this.socket.on('user:joined', function (data, callback) {
+            var user = _this.userRepo.getUserByName(data.user.name);
             var room = _this.roomRepo.getRoomByName(data.room);
-            user.socket.join(room.name);
-            room.join(user);
+            if (user.inRoom) {
+                var previousRoom = _this.roomRepo.getRoomByName(user.inRoom);
+                previousRoom.removeUser(user);
+            }
+            user.joinRoom(room.name);
+            room.addUser(user.toDto());
+            _this.global.emit('update:users', room.getUsers());
+            _this.global.emit('update:rooms', _this.roomRepo.getAllRooms());
+            if (callback) {
+                callback(room);
+            }
         });
     };
     return RoomHandler;

@@ -1,3 +1,4 @@
+import { Room } from './models/room';
 import { RoomHandler } from './socket/roomHandler';
 import { UserHandler } from './socket/userHandler';
 import * as bodyParser from "body-parser";
@@ -7,6 +8,8 @@ import * as path from "path";
 import errorHandler = require("errorhandler");
 import methodOverride = require("method-override");
 import * as io from 'socket.io';
+import { Inject } from 'typescript-ioc';
+import { RoomRepository } from './repositories/room-repo';
 
 /**
  * The server.
@@ -107,11 +110,15 @@ export class Server {
     //empty for now
   }
 
+  @Inject roomRepo:RoomRepository ;
+
   public initSocket(socket: any) {
     this.io = socket;
+    let lobby = new Room('Lobby');
+    this.roomRepo.addRoom(lobby)
     this.io.on('connection', (socket) => {
-      let roomHandler = new RoomHandler(socket)
-      let userHandler = new UserHandler(socket);
+      let roomHandler = new RoomHandler(socket, this.io)
+      let userHandler = new UserHandler(socket, this.io);
       console.log('connected', socket.id)
     })
   }

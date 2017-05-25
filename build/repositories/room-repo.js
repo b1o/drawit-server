@@ -22,6 +22,9 @@ var RoomRepository = (function () {
             return room.name == name;
         })[0];
     };
+    RoomRepository.prototype.getAllRooms = function () {
+        return this.rooms;
+    };
     return RoomRepository;
 }());
 RoomRepository = __decorate([

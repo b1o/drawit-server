@@ -14,22 +14,25 @@ var user_1 = require("./../models/user");
 var user_repo_1 = require("./../repositories/user-repo");
 var typescript_ioc_1 = require("typescript-ioc");
 var UserHandler = (function () {
-    function UserHandler(socket) {
+    function UserHandler(socket, global) {
         this.socket = socket;
         this.registerUser();
+        this.global = global;
     }
     UserHandler.prototype.registerUser = function () {
         var _this = this;
         this.socket.on('user:new', function (data, callback) {
+            console.log('adding new user - ', data.name);
             var user = new user_1.User(data.name, _this.socket);
-            console.log(user.Name, _this.socket.id);
             var a = _this.userRepo.addUser(user);
-            a.socket.join('Lobby');
-            a.inRoom = 'Lobby';
-            a.socket.emit('update:users', a.toDto());
-            a.socket.in('Lobby').emit('update:users', a.toDto());
+            var room = _this.roomRepo.getRoomByName('Lobby');
+            room.addUser(user.toDto());
+            a.joinRoom('Lobby');
+            setTimeout(function () {
+                _this.global.in('Lobby').emit('update:users', room.getUsers());
+            }, 1000);
             if (callback) {
-                callback({ users: _this.userRepo.getAllUsers(), me: a.toDto() });
+                callback({ users: _this.userRepo.getAllUsers(), me: a.toDto(), rooms: _this.roomRepo.getAllRooms() });
                 console.log(_this.userRepo.getAllUsers());
             }
         });
@@ -45,7 +48,15 @@ var UserHandler = (function () {
         });
         this.socket.on('disconnect', function () {
             console.log('disconnected', _this.socket.id);
-            _this.userRepo.removeUser(_this.socket.id);
+            var user = _this.userRepo.getUserById(_this.socket.id);
+            if (user) {
+                var room = _this.roomRepo.getRoomByName(user.inRoom);
+                room.removeUser(user);
+                if (user.inRoom) {
+                    user.leaveRoom(user.inRoom);
+                }
+                _this.userRepo.removeUser(_this.socket.id);
+            }
         });
     };
     return UserHandler;

@@ -12,28 +12,34 @@ export class UserHandler {
     @Inject
     private roomRepo: RoomRepository;
 
-    constructor(socket: SocketIO.Socket) {
+    private global: SocketIO.Server
+
+    constructor(socket: SocketIO.Socket, global: SocketIO.Server) {
         this.socket = socket;
         this.registerUser()
-
+        this.global = global;
     }
 
     private registerUser() {
         this.socket.on('user:new', (data: any, callback: any) => {
+            console.log('adding new user - ', data.name)
             let user = new User(data.name, this.socket)
-            console.log(user.Name, this.socket.id)
             let a = this.userRepo.addUser(user)
-            a.socket.join('Lobby')
-            a.inRoom = 'Lobby';
-            a.socket.emit('update:users', a.toDto())
-            a.socket.in('Lobby').emit('update:users', a.toDto())
+            let room = this.roomRepo.getRoomByName('Lobby');
+
+            room.addUser(user.toDto())
+            a.joinRoom('Lobby')
+
+            setTimeout(() => {
+                this.global.in('Lobby').emit('update:users', room.getUsers())
+            }, 1000)
+
             if (callback) {
-                callback({users: this.userRepo.getAllUsers(), me: a.toDto()})
+                callback({ users: this.userRepo.getAllUsers(), me: a.toDto(), rooms: this.roomRepo.getAllRooms() })
                 console.log(this.userRepo.getAllUsers())
             }
 
         })
-
 
         this.socket.on('message:new', (data: any, callback: any) => {
             let user = this.userRepo.getUserByName(data.from)
@@ -48,7 +54,15 @@ export class UserHandler {
 
         this.socket.on('disconnect', () => {
             console.log('disconnected', this.socket.id)
-            this.userRepo.removeUser(this.socket.id)
+            let user = this.userRepo.getUserById(this.socket.id);
+            if (user) {
+                let room = this.roomRepo.getRoomByName(user.inRoom);
+                room.removeUser(user);
+                if (user.inRoom) {
+                    user.leaveRoom(user.inRoom);
+                }
+                this.userRepo.removeUser(this.socket.id)
+            }
         })
     }
 }
