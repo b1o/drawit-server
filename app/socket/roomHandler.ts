@@ -30,17 +30,13 @@ export class RoomHandler {
             previousRoom.removeUser(creator)
             console.log('creating room: ', room.name, room.creator.id)
             this.roomRepo.addRoom(room);
-            room.addUser(creator.toDto());
             creator.joinRoom(room.name);
+            room.addUser(creator.toDto());
             let users = room.getUsers()
-            this.socket.broadcast.emit('update:room', room);
-            this.socket.emit('update:room', room)
             this.global.emit('update:rooms', this.roomRepo.getAllRooms())
-            this.global.to(room.name).emit('update:users', room.getUsers())
-            if(callback) {
-                callback(room)
-            }
-
+            this.global.to(room.name).emit('update:room-users', room.getUsers())
+            this.global.to(previousRoom.name).emit('update:room-users', room.getUsers())
+            
             console.log(users)
         })
 
@@ -50,15 +46,13 @@ export class RoomHandler {
             if(user.inRoom) {
                 let previousRoom = this.roomRepo.getRoomByName(user.inRoom);
                 previousRoom.removeUser(user)
+                this.global.to(previousRoom.name).emit('update:room-users', previousRoom.getUsers())
             }
             user.joinRoom(room.name)
             room.addUser(user.toDto())
-            this.global.emit('update:users', room.getUsers())
+            this.global.to(room.name).emit('update:room-users', room.getUsers())
             this.global.emit('update:rooms', this.roomRepo.getAllRooms())
-            
-            if (callback) {
-                callback(room)
-            }
+            this.global.emit('update:rooms', this.roomRepo.getAllRooms())
         })
     }
 

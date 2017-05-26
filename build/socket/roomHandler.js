@@ -28,16 +28,12 @@ var RoomHandler = (function () {
             previousRoom.removeUser(creator);
             console.log('creating room: ', room.name, room.creator.id);
             _this.roomRepo.addRoom(room);
-            room.addUser(creator.toDto());
             creator.joinRoom(room.name);
+            room.addUser(creator.toDto());
             var users = room.getUsers();
-            _this.socket.broadcast.emit('update:room', room);
-            _this.socket.emit('update:room', room);
             _this.global.emit('update:rooms', _this.roomRepo.getAllRooms());
-            _this.global.to(room.name).emit('update:users', room.getUsers());
-            if (callback) {
-                callback(room);
-            }
+            _this.global.to(room.name).emit('update:room-users', room.getUsers());
+            _this.global.to(previousRoom.name).emit('update:room-users', room.getUsers());
             console.log(users);
         });
         this.socket.on('user:joined', function (data, callback) {
@@ -46,14 +42,13 @@ var RoomHandler = (function () {
             if (user.inRoom) {
                 var previousRoom = _this.roomRepo.getRoomByName(user.inRoom);
                 previousRoom.removeUser(user);
+                _this.global.to(previousRoom.name).emit('update:room-users', previousRoom.getUsers());
             }
             user.joinRoom(room.name);
             room.addUser(user.toDto());
-            _this.global.emit('update:users', room.getUsers());
+            _this.global.to(room.name).emit('update:room-users', room.getUsers());
             _this.global.emit('update:rooms', _this.roomRepo.getAllRooms());
-            if (callback) {
-                callback(room);
-            }
+            _this.global.emit('update:rooms', _this.roomRepo.getAllRooms());
         });
     };
     return RoomHandler;

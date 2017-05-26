@@ -26,19 +26,28 @@ export class UserHandler {
             let user = new User(data.name, this.socket)
             let a = this.userRepo.addUser(user)
             let room = this.roomRepo.getRoomByName('Lobby');
-
-            room.addUser(user.toDto())
             a.joinRoom('Lobby')
+            room.addUser(user.toDto())
 
-            setTimeout(() => {
-                this.global.in('Lobby').emit('update:users', room.getUsers())
-            }, 1000)
+            this.global.in('Lobby').emit('update:room-users', room.getUsers())
+            this.global.in('Lobby').emit('update:rooms', this.roomRepo.getAllRooms())
 
             if (callback) {
                 callback({ users: this.userRepo.getAllUsers(), me: a.toDto(), rooms: this.roomRepo.getAllRooms() })
                 console.log(this.userRepo.getAllUsers())
             }
 
+        })
+
+        this.socket.on('get:users', (data: any, callback: any) => {
+            let user = this.userRepo.getUserById(this.socket.id);
+            let room = this.roomRepo.getRoomByName(user.inRoom);
+
+            callback(room.getUsers())
+        })
+
+        this.socket.on('get:rooms', (data: any, callback: any) => {
+            callback(this.roomRepo.getAllRooms())
         })
 
         this.socket.on('message:new', (data: any, callback: any) => {

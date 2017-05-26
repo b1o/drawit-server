@@ -26,15 +26,22 @@ var UserHandler = (function () {
             var user = new user_1.User(data.name, _this.socket);
             var a = _this.userRepo.addUser(user);
             var room = _this.roomRepo.getRoomByName('Lobby');
-            room.addUser(user.toDto());
             a.joinRoom('Lobby');
-            setTimeout(function () {
-                _this.global.in('Lobby').emit('update:users', room.getUsers());
-            }, 1000);
+            room.addUser(user.toDto());
+            _this.global.in('Lobby').emit('update:room-users', room.getUsers());
+            _this.global.in('Lobby').emit('update:rooms', _this.roomRepo.getAllRooms());
             if (callback) {
                 callback({ users: _this.userRepo.getAllUsers(), me: a.toDto(), rooms: _this.roomRepo.getAllRooms() });
                 console.log(_this.userRepo.getAllUsers());
             }
+        });
+        this.socket.on('get:users', function (data, callback) {
+            var user = _this.userRepo.getUserById(_this.socket.id);
+            var room = _this.roomRepo.getRoomByName(user.inRoom);
+            callback(room.getUsers());
+        });
+        this.socket.on('get:rooms', function (data, callback) {
+            callback(_this.roomRepo.getAllRooms());
         });
         this.socket.on('message:new', function (data, callback) {
             var user = _this.userRepo.getUserByName(data.from);
