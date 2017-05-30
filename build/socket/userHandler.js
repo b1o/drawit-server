@@ -53,6 +53,10 @@ var UserHandler = (function () {
                 }
             }
         });
+        this.socket.on('drawing', function (data) {
+            _this.global.to('Lobby').emit('drawing', data);
+            console.log(data);
+        });
         this.socket.on('disconnect', function () {
             console.log('disconnected', _this.socket.id);
             var user = _this.userRepo.getUserById(_this.socket.id);

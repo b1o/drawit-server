@@ -61,6 +61,11 @@ export class UserHandler {
             }
         })
 
+        this.socket.on('drawing', (data:any) => {
+            this.global.to('Lobby').emit('drawing', data);
+            console.log(data)
+        })
+
         this.socket.on('disconnect', () => {
             console.log('disconnected', this.socket.id)
             let user = this.userRepo.getUserById(this.socket.id);
