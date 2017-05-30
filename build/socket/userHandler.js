@@ -15,6 +15,7 @@ var user_repo_1 = require("./../repositories/user-repo");
 var typescript_ioc_1 = require("typescript-ioc");
 var UserHandler = (function () {
     function UserHandler(socket, global) {
+        this.gameStared = false;
         this.socket = socket;
         this.registerUser();
         this.global = global;
@@ -56,6 +57,27 @@ var UserHandler = (function () {
         this.socket.on('drawing', function (data) {
             _this.global.to('Lobby').emit('drawing', data);
             console.log(data);
+        });
+        this.socket.on('guess-word', function (data) {
+            if (data.word == _this.searchedWord) {
+                _this.global.to('Lobby').emit('word-guess', { word: data.word, isRight: true });
+            }
+            else {
+                _this.global.to('Lobby').emit('word-guess', { word: data.word, isRight: false });
+            }
+        });
+        this.socket.on('game-start', function (data) {
+            if (!_this.gameStared) {
+                var lobby = _this.roomRepo.getRoomByName('Lobby');
+                var users = lobby.getUsers();
+                var drawingUser = users[Math.floor(Math.random() * (users.length - 0)) + 0];
+                var words = ['apple', 'horse', 'hat', 'bike'];
+                var word = words[Math.floor(Math.random() * (words.length)) + 0];
+                _this.searchedWord = word;
+                _this.global.to('Lobby').emit('game-started', { drawer: drawingUser });
+                _this.global.to(drawingUser.id).emit('game-started', { drawer: drawingUser, word: word });
+                _this.gameStared = true;
+            }
         });
         this.socket.on('disconnect', function () {
             console.log('disconnected', _this.socket.id);

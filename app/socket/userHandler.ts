@@ -14,6 +14,9 @@ export class UserHandler {
 
     private global: SocketIO.Server
 
+    private searchedWord: string;
+    private gameStared = false;
+
     constructor(socket: SocketIO.Socket, global: SocketIO.Server) {
         this.socket = socket;
         this.registerUser()
@@ -61,9 +64,34 @@ export class UserHandler {
             }
         })
 
-        this.socket.on('drawing', (data:any) => {
+        this.socket.on('drawing', (data: any) => {
             this.global.to('Lobby').emit('drawing', data);
             console.log(data)
+        })
+
+
+        this.socket.on('guess-word', (data: any) => {
+            if (data.word == this.searchedWord) {
+                this.global.to('Lobby').emit('word-guess', { word: data.word, isRight: true })
+            } else {
+                this.global.to('Lobby').emit('word-guess', { word: data.word, isRight: false })
+            }
+        })
+
+        this.socket.on('game-start', (data: any) => {
+            if (!this.gameStared) {
+                let lobby = this.roomRepo.getRoomByName('Lobby');
+                let users = lobby.getUsers();
+                let drawingUser = users[Math.floor(Math.random() * (users.length - 0)) + 0]
+
+                let words = ['apple', 'horse', 'hat', 'bike'];
+                let word = words[Math.floor(Math.random() * (words.length)) + 0];
+                this.searchedWord = word;
+
+                this.global.to('Lobby').emit('game-started', {drawer: drawingUser})
+                this.global.to(drawingUser.id).emit('game-started', { drawer: drawingUser, word:word })
+                this.gameStared = true;
+            }
         })
 
         this.socket.on('disconnect', () => {
